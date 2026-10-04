@@ -1,32 +1,51 @@
+import os
+import telebot
 from flask import Flask
-import threading, os
-import requests
+import threading
 import time
-from datetime import datetime
- 
-app = Flask (__name__) 
+
+app = Flask(name)
+
+TOKENS = {
+    "goleador": os.getenv("TOKEN_GOLEADOR"),
+    "handicap": os.getenv("TOKEN_HANDICAP"),
+    "btts": os.getenv("TOKEN_BTTS"),
+    "escanteios": os.getenv("TOKEN_ESCANTEIOS"),
+    "exato": os.getenv("TOKEN_EXATO")
+}
+
+print("=== FIRE ESPORTIVA PRO ===")
+
+for nome, token in TOKENS.items():
+    if token and len(token) > 20:
+        print(f"✅ {nome} - Token OK")
+        bot = telebot.TeleBot(token)
+
+        @bot.message_handler(commands=['start'])
+        def start_cmd(message):
+            bot.reply_to(message, f"🔥 FIRE ESPORTIVA PRO - {nome.upper()}!\n\n✅ Bot Online em Luanda!\n\nManda /jogos")
+
+        @bot.message_handler(commands=['jogos'])
+        def jogos_cmd(message):
+            bot.reply_to(message, "⚽ Jogos de hoje em análise...")
+
+        def run_bot(b, n):
+            while True:
+                try:
+                    print(f">>> {n} POLLING LIGADO - Aguardando /start")
+                    b.infinity_polling(skip_pending=True)
+                except Exception as e:
+                    print(f"Erro {n}: {e}")
+                    time.sleep(5)
+
+        threading.Thread(target=run_bot, args=(bot, nome), daemon=True).start()
+    else:
+        print(f"❌ {nome} - SEM TOKEN no Render")
 
 @app.route('/')
 def home():
-    return "Esportiva Pro - 5 Robos Online"
+    return "🔥 FIRE ESPORTIVA PRO - 5 Robos Online!"
 
-def run_flask():
+if name == 'main':
     port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-
-threading.Thread(target=run_flask, daemon=True).start()
-
-TOKENS = {
-    "goleador": "8290316435:AAFLp_M1PatmJDnXuivcaHCF7lzWw90cIvo",
-    "handicap": "8320545096:AAGNzohuBxe0BXBNFw7XBcLxBS_2emuN628",
-    "btts": "8885934358:AAGjGVmtvDDm05-eSysJa2Nrj1nDAtcOvIY",
-    "escanteios": "8699971350:AAGIL5sQE3AyHO1-sF9anwn2Mv5rXsolGjI",
-    "exato": "8935155320:AAHsdQJkOMQ2KlEo0rQY3NAFUKSFTvLAGew"
-}
-
-print("FIRE ESPORTIVA PRO - 5 ROBOS LIGADOS")
-
-while True:
-    agora = datetime.now().strftime('%H:%M:%S')
-    print(f"[{agora}] Sistema online - Luanda")
-    time.sleep(60)
+    app.run(host="0.0.0.0", port=port)
