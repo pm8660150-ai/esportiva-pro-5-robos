@@ -3,8 +3,8 @@ import threading, os
 import requests
 import time
 from datetime import datetime
-
-app = Flask(name)
+ 
+app = Flask (__name__) 
 
 @app.route('/')
 def home():
